@@ -69,6 +69,14 @@ export const nodeDescription: INodeTypeDescription = {
 			},
 		},
 		{
+			displayName: '2Captcha API Key',
+			name: '2CaptchaApiKey',
+			type: 'string',
+			required: false,
+			default: '',
+			description: 'API key for 2Captcha',
+		},
+		{
 			displayName: 'Operation',
 			name: 'operation',
 			type: 'options',
