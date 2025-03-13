@@ -1,12 +1,12 @@
 {
   "name": "n8n-nodes-puppeteer-next",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "description": "n8n node for browser automation using Puppeteer",
   "license": "MIT",
   "homepage": "https://github.com/emcasa/n8n-nodes-puppeteer",
   "author": {
-    "name": "Nicholas Penree",
-    "email": "nick@penree.com"
+    "name": "Nicholas Penree, EmCasa",
+    "email": "nick@penree.com, dev@emcasa.com"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,9 @@
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "credentials": [],
+    "credentials": [
+      "dist/nodes/Puppeteer/Puppeteer.credentials.js"
+    ],
     "nodes": [
       "dist/nodes/Puppeteer/Puppeteer.node.js"
     ]

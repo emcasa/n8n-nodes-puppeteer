@@ -462,15 +462,16 @@ export class Puppeteer implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 		const options = this.getNodeParameter('options', 0, {}) as IDataObject;
 		const operation = this.getNodeParameter('operation', 0) as string;
+		const credentials = await this.getCredentials('twoCaptchaApi');
 		let headless: 'shell' | boolean = options.headless !== false;
 		const headlessShell = options.shell === true;
 		const executablePath = options.executablePath as string;
 		const browserWSEndpoint = options.browserWSEndpoint as string;
 		const stealth = options.stealth === true;
-		const twoCaptchaApiKey = options['2CaptchaApiKey'] as string;
+		const twoCaptchaAPI = credentials.twoCaptchaApiKey as string;
 		const launchArguments = (options.launchArguments as IDataObject) || {};
 		const launchArgs: IDataObject[] = launchArguments.args as IDataObject[];
-		const args: string[] = [];
+		const args: string[] = CONTAINER_LAUNCH_ARGS;
 		const device = options.device as string;
 		let batchSize = options.batchSize as number;
 
@@ -483,30 +484,16 @@ export class Puppeteer implements INodeType {
 			args.push(...launchArgs.map((arg: IDataObject) => arg.arg as string));
 		}
 
-		const addContainerArgs = options.addContainerArgs === true;
-		if (addContainerArgs) {
-			const missingContainerArgs = CONTAINER_LAUNCH_ARGS.filter(arg => !args.some(
-				existingArg => existingArg === arg || existingArg.startsWith(`${arg}=`)
-			));
-
-			if (missingContainerArgs.length > 0) {
-				console.log('Puppeteer node: Adding container optimizations:', missingContainerArgs);
-				args.push(...missingContainerArgs);
-			} else {
-				console.log('Puppeteer node: Container optimizations already present in launch arguments');
-			}
-		}
-
 		// More on proxying: https://www.chromium.org/developers/design-documents/network-settings
 		if (options.proxyServer) {
 			args.push(`--proxy-server=${options.proxyServer}`);
 		}
 
-		if (twoCaptchaApiKey) {
+		if (twoCaptchaAPI) {
 			puppeteer.use(RecaptchaPlugin({
 				provider: {
 					id: '2captcha',
-					token: twoCaptchaApiKey,
+					token: twoCaptchaAPI,
 				},
 			}));
 		}
