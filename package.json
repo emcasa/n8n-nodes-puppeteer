@@ -5,9 +5,15 @@
   "license": "MIT",
   "homepage": "https://github.com/emcasa/n8n-nodes-puppeteer",
   "author": {
-    "name": "Nicholas Penree, EmCasa",
-    "email": "nick@penree.com, dev@emcasa.com"
+    "name": "Nicholas Penree",
+    "email": "nick@penree.com"
   },
+  "contributors": [
+    {
+      "name": "EmCasa",
+      "email": "dev@emcasa.com"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emcasa/n8n-nodes-puppeteer.git"
