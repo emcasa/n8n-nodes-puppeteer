@@ -185,6 +185,7 @@ Access Puppeteer-specific objects using:
 - `$page` - Current page instance
 - `$browser` - Browser instance
 - `$puppeteer` - Puppeteer library
+- `$fetch` - Fetch API
 
 Plus all special variables and methods from the Code node are available. For a complete reference, see the [n8n documentation](https://docs.n8n.io/code-examples/methods-variables-reference/). Just like n8n's Code node, anything you `console.log` will be shown in the browser's console during test mode or in stdout when configured.
 

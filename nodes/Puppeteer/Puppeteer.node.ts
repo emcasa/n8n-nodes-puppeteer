@@ -168,6 +168,7 @@ async function runCustomScript(
 		$browser: browser,
 		$page: page,
 		$puppeteer: puppeteer,
+		$fetch: fetch,
 	};
 	const vm = new NodeVM({
 		console: 'redirect',

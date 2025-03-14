@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-puppeteer-next",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "n8n node for browser automation using Puppeteer",
   "license": "MIT",
   "homepage": "https://github.com/emcasa/n8n-nodes-puppeteer",
