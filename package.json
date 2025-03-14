@@ -51,8 +51,8 @@
     ]
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^8.18.1",
-    "eslint": "^9.17.0",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "n8n-workflow": "*",
@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@n8n/vm2": "^3.9.25",
-    "puppeteer": "^24.1.1",
+    "puppeteer": "^24.4.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-recaptcha": "^3.6.8",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
