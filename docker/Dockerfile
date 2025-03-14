@@ -1,4 +1,4 @@
-FROM docker.n8n.io/n8nio/n8n
+FROM docker.n8n.io/n8nio/n8n:1.82.3
 
 USER root
 
@@ -16,19 +16,19 @@ RUN apk add --no-cache \
     font-noto-emoji
 
 # Tell Puppeteer to use installed Chrome instead of downloading it
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium-browser
 
 # Install n8n-nodes-puppeteer in a permanent location
-RUN mkdir -p /opt/n8n-custom-nodes && \
-    cd /opt/n8n-custom-nodes && \
-    npm install n8n-nodes-puppeteer && \
-    chown -R node:node /opt/n8n-custom-nodes
+RUN mkdir -p /opt/n8n-custom-nodes \
+  && cd /opt/n8n-custom-nodes \
+  && npm install n8n-nodes-puppeteer-next \
+  && chown -R node:node /opt/n8n-custom-nodes
 
 # Copy our custom entrypoint
 COPY docker-custom-entrypoint.sh /docker-custom-entrypoint.sh
-RUN chmod +x /docker-custom-entrypoint.sh && \
-    chown node:node /docker-custom-entrypoint.sh
+RUN chmod +x /docker-custom-entrypoint.sh \
+  && chown node:node /docker-custom-entrypoint.sh
 
 USER node
 
