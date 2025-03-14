@@ -24,6 +24,7 @@ import {
 } from 'puppeteer';
 import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 import { nodeDescription } from './Puppeteer.node.options';
+import { downloadFile } from './helpers';
 
 const {
 	NODE_FUNCTION_ALLOW_BUILTIN: builtIn,
@@ -163,6 +164,7 @@ async function runCustomScript(
 			...this.helpers,
 			httpRequestWithAuthentication: this.helpers.httpRequestWithAuthentication.bind(this),
 			requestWithAuthenticationPaginated: this.helpers.requestWithAuthenticationPaginated.bind(this),
+			downloadFile: (options = {}) => downloadFile(page, options),
 		},
 		...this.getWorkflowDataProxy(itemIndex),
 		$browser: browser,

@@ -59,7 +59,7 @@ export const nodeDescription: INodeTypeDescription = {
 				{
 					name: 'Run Custom Script',
 					value: 'runCustomScript',
-					description: 'Runs custom code to perform specific actions on the page',
+					description: 'Runs custom code to perform specific actions on the page. Supports advanced features like CDP for file downloads, network interception, and more.',
 				},
 			],
 			default: 'getPageContent',
@@ -75,7 +75,42 @@ export const nodeDescription: INodeTypeDescription = {
 			},
 			required: true,
 			default:
-				'// Navigate to an IP lookup service\nawait $page.goto(\'https://httpbin.org/ip\');\n\n// Extract the IP address from the page content\nconst ipData = await $page.evaluate(() => {\n    const response = document.body.innerText;\n    const parsed = JSON.parse(response);\n    return parsed.origin;  // Extract the \'origin\' field, which typically contains the IP address\n});\n\nconsole.log("Hello, world!");\n\nconsole.log("IP Address", ipData);\n\n// Return the result in the required format\nreturn [{ ip: ipData, ...$json }];',
+				'// Example 1: Get IP Address\n' +
+				'async function getIpAddress() {\n' +
+				'  await $page.goto(\'https://httpbin.org/ip\');\n' +
+				'  const ipData = await $page.evaluate(() => {\n' +
+				'    const response = document.body.innerText;\n' +
+				'    const parsed = JSON.parse(response);\n' +
+				'    return parsed.origin;\n' +
+				'  });\n' +
+				'  return [{ ip: ipData }];\n' +
+				'}\n\n' +
+				'// Example 2: Download Files using helper function\n' +
+				'async function downloadFiles() {\n' +
+				'  // Navigate to the page\n' +
+				'  await $page.goto(\'https://proof.ovh.net/files/\', { waitUntil: \'networkidle0\' });\n\n' +
+				'  // Use the helper function to download files\n' +
+				'  const downloads = await helpers.downloadFile(\n' +
+				'    \'#main > table > tbody > tr:nth-child(2) > td:nth-child(1) > a\',\n' +
+				'    {\n' +
+				'      timeout: 5000, // Wait 5 seconds for downloads\n' +
+				'      urlPattern: \'*\', // Intercept all URLs\n' +
+				'    }\n' +
+				'  );\n\n' +
+				'  // Return results in n8n format\n' +
+				'  return downloads.map(({ fileName, content }) => ({\n' +
+				'    json: { fileName },\n' +
+				'    binary: {\n' +
+				'      [fileName]: {\n' +
+				'        data: content.toString(\'base64\'),\n' +
+				'        fileName,\n' +
+				'        mimeType: \'application/octet-stream\',\n' +
+				'      },\n' +
+				'    },\n' +
+				'  }));\n' +
+				'}\n\n' +
+				'// Choose which example to run\n' +
+				'return await downloadFiles();\n',
 			description:
 				'JavaScript code to execute with Puppeteer. You have access to the $browser and $page objects, which represent the Puppeteer browser and page.',
 			displayOptions: {

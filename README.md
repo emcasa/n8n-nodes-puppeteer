@@ -187,6 +187,41 @@ Access Puppeteer-specific objects using:
 - `$puppeteer` - Puppeteer library
 - `$fetch` - Fetch API
 
+Helper functions available:
+
+- `helpers.downloadFile(clickSelector: string, options?: object)` - Downloads files triggered by clicking an element
+  - `clickSelector`: CSS selector for the element that triggers the download
+  - `options`:
+    - `timeout`: Time to wait for downloads (default: 3000ms)
+    - `waitForSelector`: Wait for this selector before clicking
+    - `urlPattern`: URL pattern to intercept (default: '*')
+  - Returns: Array of downloaded files with fileName and content
+
+Example using helper function:
+```javascript
+// Navigate to the page
+await $page.goto('https://example.com/files');
+
+// Download files using the helper
+const downloads = await helpers.downloadFile('#download-button', {
+  timeout: 5000,
+  waitForSelector: '#download-button',
+  urlPattern: '*.pdf'
+});
+
+// Return results in n8n format
+return downloads.map(({ fileName, content }) => ({
+  json: { fileName },
+  binary: {
+    [fileName]: {
+      data: content.toString('base64'),
+      fileName,
+      mimeType: 'application/octet-stream',
+    },
+  },
+}));
+```
+
 Plus all special variables and methods from the Code node are available. For a complete reference, see the [n8n documentation](https://docs.n8n.io/code-examples/methods-variables-reference/). Just like n8n's Code node, anything you `console.log` will be shown in the browser's console during test mode or in stdout when configured.
 
 ### Basic
@@ -264,6 +299,133 @@ return [
   },
 ];
 ```
+
+### Downloading Files with Helper Function
+
+Here's a practical example that demonstrates downloading files using the helper function:
+
+```javascript
+// Navigate to the files page
+await $page.goto("https://proof.ovh.net/files/", { waitUntil: "networkidle0" });
+
+// Use the helper function to download the file
+const downloads = await helpers.downloadFile({
+  clickSelector: '#main > table > tbody > tr:nth-child(2) > td:nth-child(1) > a',
+  timeout: 3000,
+  urlPattern: '*'
+});
+
+// Process and return the downloads
+return downloads.map(({ fileName, content }) => ({
+  json: { 
+    fileName,
+    downloadedAt: new Date().toISOString()
+  },
+  binary: {
+    [fileName]: {
+      data: content.toString('base64'),
+      fileName,
+      mimeType: 'application/octet-stream'
+    }
+  }
+}));
+```
+
+This example demonstrates:
+- Using the helper function to handle downloads
+- Proper timeout handling
+- Converting downloaded content to n8n binary format
+- Adding metadata to the output
+
+### Downloading Files using CDP
+
+Here's how to download files directly using CDP when you need more control:
+
+```javascript
+// Create CDP session
+const cdp = await $page.createCDPSession();
+
+// Navigate to target site
+await $page.goto("https://proof.ovh.net/files/", { waitUntil: "networkidle0" });
+
+// Configure Network Interception
+await cdp.send('Network.enable');
+await cdp.send('Network.setRequestInterception', {
+  patterns: [
+    {
+      urlPattern: '*',
+      interceptionStage: 'HeadersReceived',
+    },
+  ],
+});
+
+// Function to download file once the response was intercepted
+const downloadFileFromInterceptedResponse = async (interceptionId, fileName) => {
+    const { stream: streamHandle } = await cdp.send('Network.takeResponseBodyForInterceptionAsStream', {
+      interceptionId: interceptionId,
+    });
+    let content = '';
+    while (true) {
+      const read = await cdp.send('IO.read', {
+        handle: streamHandle,
+      });
+      if (read.eof)
+        break;
+      content += read.data;
+    }
+    // After file data is collected, abort the request so browser doesn't wait
+    cdp.send('Network.continueInterceptedRequest', {
+      interceptionId: interceptionId,
+      errorReason: 'Aborted',
+    });
+    return content;
+};
+
+// Listen for intercepted events
+let downloadedFile;
+const downloadPromises = [];
+await cdp.on('Network.requestIntercepted', async (event) => {
+  if (event.isDownload) {
+    // When event is a download we call our download function
+    const fileName = event.request.url.split('/').pop();
+    const filePromise = downloadFileFromInterceptedResponse(event.interceptionId, fileName);
+    downloadPromises.push(filePromise);
+    downloadedFile = await filePromise;
+  } else {
+    await cdp.send('Network.continueInterceptedRequest', {
+      interceptionId: event.interceptionId,
+    });
+  }
+});
+
+// Trigger the download
+await $page.click('#main > table > tbody > tr:nth-child(2) > td:nth-child(1) > a');
+
+// Wait for downloads to finish
+await new Promise(r => setTimeout(r, 3000));
+await Promise.all(downloadPromises);
+
+// Return the result in n8n format
+return [{
+  json: {
+    fileName: 'downloaded_file',
+    downloadedAt: new Date().toISOString()
+  },
+  binary: {
+    file: {
+      data: Buffer.from(downloadedFile, 'base64').toString('base64'),
+      fileName: 'downloaded_file',
+      mimeType: 'application/octet-stream'
+    }
+  }
+}];
+```
+
+This example demonstrates:
+- Direct use of CDP for download handling
+- Network request interception
+- Stream handling for file downloads
+- Proper cleanup and error handling
 
 ## Screenshots
 
